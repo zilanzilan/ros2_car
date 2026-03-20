@@ -13,7 +13,7 @@
 // 参数
 const double l1 = 1.0;    // f1 的衰减速率
 const double l2 = 1.0;    // f2 的增长速率
-const double r  = 0.8;    // 反应向量场常数,反应边界在车距离障碍物为 r 的距离
+const double r  = 1.0;    // 反应向量场常数,反应边界在车距离障碍物为 r 的距离
 const double c_p  = 0.3;
 const double c  = -r + c_p;   // 排斥向量场常数,排斥边界在车距离障碍物为 c_p 的距离
 const double eps = l2 * c / (l1 + l2);  // 扰动向量场参数
@@ -123,6 +123,14 @@ private:
 
         // 如果已经到达，不再处理
         if (reached_) {
+            geometry_msgs::msg::PointStamped stop_msg;
+            stop_msg.header.stamp = this->get_clock()->now();
+            stop_msg.header.frame_id = "base_footprint";
+            stop_msg.point.x = 0.0;
+            stop_msg.point.y = 0.0;
+            stop_msg.point.z = 0.0;
+            local_target_pub_->publish(stop_msg);
+            RCLCPP_INFO(this->get_logger(), "Reached the goal! Stopping!!!!!!!!!!!");
             return;
         }
 
@@ -132,8 +140,7 @@ private:
         double distance_to_goal = std::sqrt(dx_global * dx_global + dy_global * dy_global);
 
         // 判断是否接近目标（阈值 0.1 米）
-        if (distance_to_goal < 0.1) {
-            RCLCPP_INFO(this->get_logger(), "Reached the goal!");
+        if (distance_to_goal < 0.2) {
             reached_ = true;
             return;
         }
