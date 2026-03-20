@@ -23,18 +23,16 @@ public:
         max_gap_ = this->get_parameter("max_gap").as_int();
 
         // 构建话题名称
-        std::string scan_topic = "/" + robot_namespace_ + "/scan";
-        std::string center_topic = "/" + robot_namespace_ + "/obstacle_centers";
+        // std::string scan_topic = "/" + robot_namespace_ + "/scan";
+        std::string scan_topic = "/scan";
+        std::string center_topic = "/obstacle_centers";
 
         // 创建订阅者（使用传感器数据默认QoS）
-        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
-            scan_topic, rclcpp::SensorDataQoS(),
+        subscription_ = this->create_subscription<sensor_msgs::msg::LaserScan>(scan_topic, rclcpp::SensorDataQoS(),
             std::bind(&LaserObstacleDetector::scanCallback, this, std::placeholders::_1));
 
         // 创建发布者
         publisher_ = this->create_publisher<sensor_msgs::msg::PointCloud>(center_topic, 10);
-
-        RCLCPP_INFO(this->get_logger(), "Laser obstacle detector initialized for namespace: %s", robot_namespace_.c_str());
     }
 
 private:
@@ -115,7 +113,7 @@ private:
         // 提取每个聚类的中心点并发布
         auto cloud_msg = std::make_unique<sensor_msgs::msg::PointCloud>();
         cloud_msg->header = scan_msg->header;  // 使用与激光扫描相同的时间戳和坐标系
-        cloud_msg->header.stamp = this->now(); // 也可以使用当前时间，但保持原样更合适
+        // cloud_msg->header.stamp = this->now(); // 也可以使用当前时间，但保持原样更合适
 
         for (auto& cluster : clusters) {
             if (cluster.empty()) continue;
